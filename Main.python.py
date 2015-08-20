@@ -1,2 +1,0 @@
-go tashi go
-muhaha
