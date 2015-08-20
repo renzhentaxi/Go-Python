@@ -9,6 +9,7 @@ Chinese board game Weiqi named Go or Baduk in other languages.
 ----------------
   * python
   * pygame
+  * pip
   * git (optional)
   
   
@@ -20,12 +21,14 @@ Chinese board game Weiqi named Go or Baduk in other languages.
 
   * run `git clone https://github.com/renzhentaxi/Go-Python.git`
   * `cd` into **Go-Python**
+  * type `pip install -r requirements.txt` Note: you might need to use `sudo` or the `--user` flag
   * run `python main.py`
   
 ###git not installed
 
   * download the repository as a **.zip** file from github
   * unzip the folder and `cd` into the directory
+  * type `pip install -r requirements.txt` Note: you might need to use `sudo` or the `--user` flag
   * run `python main.py`
   
   
