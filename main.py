@@ -56,8 +56,8 @@ def start():
     '''Commences board creation'''
     Intersection.intersections = []
     
-    for x in xrange(game_size):
-        for y in xrange(game_size):
+    for x in range(game_size):
+        for y in range(game_size):
             Intersection(x, y)  # I don't like this, it returns a list of Instersection type objects. I'd prefer .append() a tuple and work off that. But up to you
 
     
