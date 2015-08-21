@@ -33,7 +33,7 @@ NINE_BY_NINE = [
                ]
 
 
-print NINE_BY_NINE
+
 class Intersection:
     '''Class that handles creation of the visible board'''
     intersections = []
