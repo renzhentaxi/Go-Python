@@ -1,46 +1,72 @@
-import pygame,sys
+#----------- Imports ---------------
+import pygame
+import sys
 
 
-gameSize = 9
-screenWidth = 800
-screenHeight = 600
+#---------- Board Setup ------------
+game_size = 9 
+screen_width = 800
+screen_height = 800
 BLACK = (0,0,0)
 WHITE = (255,255,255)
-boardSize = screenHeight
-unitSize = int(boardSize/gameSize)
-#display
+board_size = screen_height - 200  # to ensure stones on corners are visible
+unit_size = int(board_size / game_size)
+
+#---------- PyGame Config -----------
 pygame.init()
-screen = pygame.display.set_mode((screenWidth,screenHeight))
+screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("GO by Taxi")
-#classes
+
+
+
 class Intersection:
+    '''Class that handles creation of the visible board'''
     intersections = []
-    def __init__(self,x,y):
+    def __init__(self, x, y):
         self.intersections.append(self)
         self.x = x
         self.y = y
-    def draw(self,surface):
-        pygame.draw.circle(surface,BLACK,((self.x+1)*unitSize,(self.y+1)*unitSize),int(unitSize/2))
+
+    def draw_black(self, surface):
+        '''draws a black stone'''
+        pygame.draw.circle(surface, BLACK,((self.x+1)*unit_size,(self.y+1)*unit_size), int(unit_size/2))
+
+    def draw_white(self, surface):
+        '''draws a white circle'''
+        pygame.draw.circle(surface, WHITE,((self.x+1)*unit_size,(self.y+1)*unit_size), int(unit_size/2))
+
+
 #functions
 def start():
-    #createIntersections
+    '''Commences board creation'''
     Intersection.intersections = []
     
-    for x in range(gameSize-1):
-        for y in range(gameSize-1):
-            Intersection(x,y)
+    for x in xrange(game_size):
+        for y in xrange(game_size):
+            Intersection(x, y)  # I don't like this, it returns a list of Instersection type objects. I'd prefer .append() a tuple and work off that. But up to you
 
-def drawBoard(surface):
-  surface.fill(WHITE)
-  for x in range(gameSize):
-    for y in range(gameSize):
-      pygame.draw.line(surface,BLACK,(x*unitSize,0),(x*unitSize,boardSize))
-      pygame.draw.line(surface,BLACK,(0,y*unitSize),(boardSize,y*unitSize))
-  for i in Intersection.intersections:
-      i.draw(surface)
+    
 
-def mouseClicked(pos):
+def draw_board(surface):
+  '''Draws intersections for game board'''
+  surface.fill((161, 148, 36))  # So white stones are visible, can replace with board img later
+  for x in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
+    for y in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
+      pygame.draw.line(surface, BLACK,(x*unit_size, 65), (x*unit_size, board_size-8), 3) # for border vertical line fixed length issue, added width for visibility
+      pygame.draw.line(surface, BLACK,(65, y*unit_size), (board_size-5, y*unit_size), 3) # for border horizontal line fixed length issue added width for visibility
+  
+
+  for intxn in Intersection.intersections[:50:3]:  # indices just for demonstration
+      intxn.draw_white(surface)
+
+  for intxn in Intersection.intersections[::4]:   # indices just for demonstration
+      intxn.draw_black(surface)
+  
+
+def mouse_clicked(pos):
+    '''Add something to doctstring'''
     a = 4
+
 start()
 #loop
 while True:
@@ -50,5 +76,5 @@ while True:
             sys.exit()
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouseClicked(event.pos)
-        drawBoard(screen)
+        draw_board(screen)
         pygame.display.flip()
