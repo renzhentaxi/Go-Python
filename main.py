@@ -38,14 +38,16 @@ def make_board_tuple(num):
     '''
     return [(j, i) for i in range(num) for j in range(num)]
 
-def draw_board(surface):
+def draw_board():
     '''Draws intersections for game board'''
+    surface = pygame.Surface((board_size,board_size))
     surface.fill((161, 148, 36))  # So white stones are visible, can replace with board img later
+
     for x in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
       for y in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
-        pygame.draw.line(surface, BLACK,(x*unit_size, 65), (x*unit_size, board_size-8), 3) # for border vertical line fixed length issue, added width for visibility
-        pygame.draw.line(surface, BLACK,(65, y*unit_size), (board_size-5, y*unit_size), 3) # for border horizontal line fixed length issue added width for visibility
-
+        pygame.draw.line(surface, BLACK,(x*unit_size, 0), (x*unit_size, board_size), 3) # for border vertical line fixed length issue, added width for visibility
+        pygame.draw.line(surface, BLACK,(0, y*unit_size), (board_size, y*unit_size), 3) # for border horizontal line fixed length issue added width for visibility
+    return surface
 def draw_black(surface, x, y):
     '''draws a black stone'''
     pygame.draw.circle(surface, BLACK,((x+1)*unit_size,(y+1)*unit_size), int(unit_size/2))
@@ -121,6 +123,8 @@ def game_loop():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_clicked(event.pos)
+                print(unit_size)
+                print((event.pos[0]-event.pos[0]%unit_size)/unit_size)
             pygame.display.flip()
 
 
@@ -149,7 +153,7 @@ print("Total black kills: {}".format(black_kills))  # Should be 2 since white go
 
 
 #Atari and random black piece scenario
-draw_board(screen)
+screen.blit(draw_board(),(65,65))
 
 for val in black_dict.values():
     for tupl in val:
