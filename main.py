@@ -14,14 +14,14 @@ BLACK = (0,0,0)
 WHITE = (255,255,255)
 board_size = screen_height - 200  # to ensure stones on corners are visible
 unit_size = int(board_size / game_size)
-
+offset = 100
 
 #---------- PyGame Config -------------------------
 
 
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("GO by Taxi")
+pygame.display.set_caption("GO by Taxi&Dor")
 
 
 
@@ -38,16 +38,16 @@ def make_board_tuple(num):
     '''
     return [(j, i) for i in range(num) for j in range(num)]
 
-def draw_board():
+def draw_board(screen):
     '''Draws intersections for game board'''
-    surface = pygame.Surface((board_size,board_size))
+    surface  = pygame.Surface((board_size,board_size))
+    gridSize = board_size-unit_size
     surface.fill((161, 148, 36))  # So white stones are visible, can replace with board img later
-
     for x in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
-      for y in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
-        pygame.draw.line(surface, BLACK,(x*unit_size, 0), (x*unit_size, board_size), 3) # for border vertical line fixed length issue, added width for visibility
-        pygame.draw.line(surface, BLACK,(0, y*unit_size), (board_size, y*unit_size), 3) # for border horizontal line fixed length issue added width for visibility
-    return surface
+        for y in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
+            pygame.draw.line(surface, BLACK,(x*unit_size, 0), (x*unit_size, board_size-5), 3) # for border vertical line fixed length issue, added width for visibility
+            pygame.draw.line(surface, BLACK,(0, y*unit_size), (board_size-5, y*unit_size), 3) # for border horizontal line fixed length issue added width for visibility
+    screen.blit(surface,(offset,offset))
 def draw_black(surface, x, y):
     '''draws a black stone'''
     pygame.draw.circle(surface, BLACK,((x+1)*unit_size,(y+1)*unit_size), int(unit_size/2))
@@ -59,7 +59,7 @@ def draw_white(surface, x, y):
 
 #---------------- Game Functions -------------------
 
-board_tuples = make_board_tuple(9)
+board_tuples = make_board_tuple(9) 
 
 empty_dict = {
                 "empty": board_tuples
@@ -96,6 +96,22 @@ def remove_coordinate(dictionary, key, coor):
     dictionary[str(key)].remove(coor)
 
 
+def pixel_to_coordinate(tupl, unit):
+    '''gets coordinates from pygame.event.pos and converts to board coordinates'''
+    x = (tupl[0] - tupl[0] % unit) / unit
+    y = (tupl[1] - tupl[1] % unit) / unit
+    return (x, y)
+
+
+def check_move(tupl, dict1, dict2, dict3):
+    '''checks if user move is valid'''
+    if tupl in dict1.values():  # if coordinate is one of the empty ones
+        # if surrounded stones aren't entirely black or white aka can't go cause of suicide
+        if ((tupl[0] + 1 and tupl[0] - 1 and tupl[1] + 1 and tupl[1] - 1) not in dict2.values()) and ((tupl[0] + 1 and tupl[0] - 1 and tupl[1] + 1 and tupl[1] - 1) not in dict3.values()):
+            return True
+    return False
+
+
 
 #check if move valid
 #like def count_score (+= kill_count)
@@ -123,8 +139,7 @@ def game_loop():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_clicked(event.pos)
-                print(unit_size)
-                print((event.pos[0]-event.pos[0]%unit_size)/unit_size)
+                print(pixel_to_coordinate(event.pos, unit_size))  # get rid of this later, just to see if it works
             pygame.display.flip()
 
 
@@ -153,7 +168,7 @@ print("Total black kills: {}".format(black_kills))  # Should be 2 since white go
 
 
 #Atari and random black piece scenario
-screen.blit(draw_board(),(65,65))
+draw_board(screen)
 
 for val in black_dict.values():
     for tupl in val:
