@@ -7,21 +7,29 @@ import sys
 #---------- Board Setup ---------------------------
 
 
-game_size = 9 
-screen_width = 800
-screen_height = 800
 BLACK = (0,0,0)
 WHITE = (255,255,255)
-board_size = screen_height - 200  # to ensure stones on corners are visible
-unit_size = int(board_size / game_size)
-offset = 100
+board_color = (161, 148, 36)
+
+game_size = 10 
+screen_width = 800
+screen_height = 800
+board_size = screen_height - 100  
+unit_size = int(board_size /game_size)
+unit_sizeh = int(unit_size/2)
+offsetx = (screen_width-board_size)/2
+offsety = (screen_height-board_size)/2
+board_surface = pygame.Surface((screen_width, screen_height))
+board_surface = pygame.Surface((board_size, board_size))
+white_surface = pygame.Surface((unit_size, unit_size))
+black_surface = pygame.Surface((unit_size, unit_size))
 
 #---------- PyGame Config -------------------------
 
 
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("GO by Taxi&Dor")
+pygame.display.set_caption("GO by Taxi")
 
 
 
@@ -38,19 +46,24 @@ def make_board_tuple(num):
     '''
     return [(j, i) for i in range(num) for j in range(num)]
 
-def draw_board(screen):
-    '''Draws intersections for game board'''
-    surface  = pygame.Surface((board_size,board_size))
-    gridSize = board_size-unit_size
-    surface.fill((161, 148, 36))  # So white stones are visible, can replace with board img later
-    for x in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
-        for y in range(1, game_size+1):  # So lines aren't drawn at pos 0 on either x or y coordinates 
-            pygame.draw.line(surface, BLACK,(x*unit_size, 0), (x*unit_size, board_size-5), 3) # for border vertical line fixed length issue, added width for visibility
-            pygame.draw.line(surface, BLACK,(0, y*unit_size), (board_size-5, y*unit_size), 3) # for border horizontal line fixed length issue added width for visibility
-    screen.blit(surface,(offset,offset))
+def draw_init():
+    #init board surface
+    board_surface.fill(board_color)
+
+    for x in range(1,game_size):
+        for y in range(1,game_size):
+            pygame.draw.line(board_surface,BLACK,(x*unit_size,unit_size),(x*unit_size,unit_size*9),3)
+            pygame.draw.line(board_surface,BLACK,(unit_size,y*unit_size),(unit_size*9,y*unit_size),3)
+    #init stone surface
+    rect =white_surface.get_rect()
+    pygame.draw.circle(white_surface,WHITE,rect.center,unit_sizeh)
+    pygame.draw.circle(black_surface,BLACK,rect.center,unit_sizeh)
+
+
 def draw_black(surface, x, y):
     '''draws a black stone'''
     pygame.draw.circle(surface, BLACK,((x+1)*unit_size,(y+1)*unit_size), int(unit_size/2))
+
 
 def draw_white(surface, x, y):
     '''draws a white circle'''
@@ -59,7 +72,7 @@ def draw_white(surface, x, y):
 
 #---------------- Game Functions -------------------
 
-board_tuples = make_board_tuple(9) 
+board_tuples = make_board_tuple(9)
 
 empty_dict = {
                 "empty": board_tuples
@@ -76,15 +89,15 @@ black_dict = {
 white_kills = 0
 black_kills = 0
 
-def add_coordinate(dictionary, key, coor):
-    '''Adds tuple coordinate to dictionary'''
-    if str(key) != "empty":  # If we're not adding an empty coordinate like after atari 
+def add_stone(dictionary, key, coor):
+    '''Adds tuple stone to dictionary'''
+    if str(key) != "empty":  # If we're not adding an empty stone like after atari 
         empty_dict['empty'].remove(coor)
     dictionary[str(key)].append(coor)
 
 
-def remove_coordinate(dictionary, key, coor):
-    '''Removes coordinate argument from dictionary'''
+def remove_stone(dictionary, key, coor):
+    '''Removes stone argument from dictionary'''
     global white_kills
     global black_kills
     if key == 'black':
@@ -94,22 +107,6 @@ def remove_coordinate(dictionary, key, coor):
     else: 
         pass
     dictionary[str(key)].remove(coor)
-
-
-def pixel_to_coordinate(tupl, unit):
-    '''gets coordinates from pygame.event.pos and converts to board coordinates'''
-    x = (tupl[0] - tupl[0] % unit) / unit
-    y = (tupl[1] - tupl[1] % unit) / unit
-    return (x, y)
-
-
-def check_move(tupl, dict1, dict2, dict3):
-    '''checks if user move is valid'''
-    if tupl in dict1.values():  # if coordinate is one of the empty ones
-        # if surrounded stones aren't entirely black or white aka can't go cause of suicide
-        if ((tupl[0] + 1 and tupl[0] - 1 and tupl[1] + 1 and tupl[1] - 1) not in dict2.values()) and ((tupl[0] + 1 and tupl[0] - 1 and tupl[1] + 1 and tupl[1] - 1) not in dict3.values()):
-            return True
-    return False
 
 
 
@@ -123,9 +120,12 @@ def check_move(tupl, dict1, dict2, dict3):
 #---------- Event Handling Functions ---------------
 
 
-def mouse_clicked(pos):
-    '''Add something to doctstring'''
-    a = 4
+def mouse_clicked(event):
+    x = event.pos[0]-offsetx-unit_sizeh
+    y = event.pos[1]-offsety-unit_sizeh
+    x = (x-x%unit_size)/unit_size
+    y = (y-y%unit_size)/unit_size
+    print(x,y)
 
 
 
@@ -139,7 +139,6 @@ def game_loop():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_clicked(event.pos)
-                print(pixel_to_coordinate(event.pos, unit_size))  # get rid of this later, just to see if it works
             pygame.display.flip()
 
 
@@ -148,22 +147,22 @@ def game_loop():
 # Fill with some tests to make sure everything is working
 
 #black pieces, should only be at (3, 5) and (0, 1)
-add_coordinate(black_dict, 'black', (3, 5))
-add_coordinate(black_dict, 'black', (8, 8))
-add_coordinate(black_dict, 'black', (0, 1))
-remove_coordinate(black_dict, 'black', (8, 8))
+add_stone(black_dict, 'black', (3, 5))
+add_stone(black_dict, 'black', (8, 8))
+add_stone(black_dict, 'black', (0, 1))
+remove_stone(black_dict, 'black', (8, 8))
 print("Total white kills: {}".format(white_kills))  # should be one, only one removed
 
 
 #white pieces, should only be at (3, 6), (3, 4), (2, 5), and (4, 5)
-add_coordinate(white_dict, 'white', (3, 6))
-add_coordinate(white_dict, 'white', (3, 4))
-add_coordinate(white_dict, 'white', (2, 5))
-add_coordinate(white_dict, 'white', (4, 5))
-add_coordinate(white_dict, 'white', (7, 7))
-add_coordinate(white_dict, 'white', (7, 6))
-remove_coordinate(white_dict, 'white', (7, 7))
-remove_coordinate(white_dict, 'white', (7, 6))
+add_stone(white_dict, 'white', (3, 6))
+add_stone(white_dict, 'white', (3, 4))
+add_stone(white_dict, 'white', (2, 5))
+add_stone(white_dict, 'white', (4, 5))
+add_stone(white_dict, 'white', (7, 7))
+add_stone(white_dict, 'white', (7, 6))
+remove_stone(white_dict, 'white', (7, 7))
+remove_stone(white_dict, 'white', (7, 6))
 print("Total black kills: {}".format(black_kills))  # Should be 2 since white got removed twice
 
 
