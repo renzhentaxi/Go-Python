@@ -7,7 +7,7 @@ BLUE  = (0,0,255)
 # theme colors
 c_board = (161,148,36)
 # size related settings
-game_size      = 5
+game_size      = 9
 screen_width   = 800
 screen_height  = 600
 
@@ -103,9 +103,10 @@ def ko_rule(group,index):
 	return False
 def score():
 	global white_score,black_score,game_over
-	white_territory,black_territory = count_territory()
-	white_score+= white_territory
-	black_score+=black_territory
+	if len(stone_List)> 0:
+		white_territory,black_territory = count_territory()
+		white_score+= white_territory
+		black_score+=black_territory
 	print("Game has ended")
 	print("White score: ",white_score)
 	print("Black score: ",black_score)
@@ -247,8 +248,8 @@ def remove_group(group):
 #########################event handling ###############################
 def on_mouse_click(event):
 	global turn,used_pass
-	if event.button == 1:
-		if not game_over:
+	if not game_over:
+		if event.button == 1:
 			index = pos2index(event.pos)
 			if index_legal(index):
 				if try_capture(index):
@@ -256,18 +257,20 @@ def on_mouse_click(event):
 					group()
 					used_pass = False
 					turn *= -1
-	elif event.button == 3:
-		if not game_over and used_pass:
-			score()
-		used_pass = True
-		turn *= -1
+		elif event.button == 3:
+			if used_pass:
+				score()
+			used_pass = True
+			turn *= -1
+def newGame():
+	global game_over,used_pass,turn
+	turn = -1
+	game_over = False
+	stone_List.clear()
+	used_pass = False
+
 ##################debug#########################################
-add_stone((0,2),-1)
-add_stone((1,2),-1)
-add_stone((1,0),-1)
-add_stone((1,1),-1)
-add_stone((2,2),1)
-group()
+
 ################################game loop
 def game_loop():
 	draw_init()
@@ -278,6 +281,9 @@ def game_loop():
 				sys.exit()
 			if event.type == pygame.MOUSEBUTTONDOWN:
 				on_mouse_click(event)
+			if event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_r:
+					newGame()
 			draw()
 		pygame.display.flip()
 if __name__ == '__main__':
